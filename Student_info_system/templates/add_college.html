@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='add_college.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Add College</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>ADD COLLEGE</h1>
+
+        <form action="{{ url_for('colleges') }}">
+            <button type="submit" class="back-button">
+                <i class="fa-solid fa-arrow-left" style="color: #8c0000;"></i>
+            </button>
+        </form>
+      
+        <div id="notification" class="notification" style="display: none;"></div>
+
+        <form action="{{ url_for('add_college') }}" method="POST" id="addCollegeForm">
+
+            <label for="college_code">COLLEGE CODE</label>
+            <input type="text" id="college_code" name="college_code" placeholder="COLLEGE CODE" required>
+
+            <label for="college_name">COLLEGE NAME</label>
+            <input type="text" id="college_name" name="college_name" placeholder="COLLEGE NAME" required>
+
+            <button type="submit" class="add-button">ADD COLLEGE</button>
+        </form>
+    </div>
+
+
+    <!--------------------------------JAVASCRIPT THINGZ--------------------------------------->
+    <script>
+        $(document).ready(function() {
+            $('#addCollegeForm').on('submit', function(event) {
+                event.preventDefault(); 
+    
+                var collegeCode = $('#college_code').val();
+                var collegeName = $('#college_name').val();
+    
+                $.ajax({
+                    url: "{{ url_for('check_college_existence') }}",  
+                    type: 'POST',
+                    data: {
+                        college_code: collegeCode,
+                        college_name: collegeName
+                    },
+                    success: function(response) {
+                        if (response.exists) {
+                            var message = '';
+                            if (response.name_exists) {
+                                message += 'course name existz. ';
+                            }
+                            if (response.code_exists) {
+                                message += 'course code existz. ';
+                            }
+                            message += 'write again plez.';
+    
+                            if (confirm(message)) {
+                                $('#addCollegeForm').off('submit').submit();
+                            } else {
+                                window.location.href = "{{ url_for('add_college') }}"; 
+                            }
+
+                        } else {
+                            if (confirm('r u shur u wanna add dis college?')) {
+                                $('#addCollegeForm').off('submit').submit();
+                            } else {
+                                window.location.href = "{{ url_for('add_college') }}"; 
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    
+        function showNotification(message, type) {
+            var notification = document.getElementById("notification");
+            notification.style.display = "block";
+            notification.innerHTML = message;
+            notification.className = "notification " + type;
+        }
+    </script>
+
+</body>
+</html>
+    
