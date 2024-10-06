@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='students.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="header">
+        <div class="student-info">STUDENT INFORMATION SYSTEM</div>
+        
+        <div class="nav-buttons">
+            <a href="{{ url_for('colleges') }}" class="nav-button">Colleges</a>
+            <a href="{{ url_for('courses') }}" class="nav-button">Courses</a>
+        </div>
+    
+        <form action="{{ url_for('index') }}">
+            <button class="button">
+                <i class="fa-solid fa-arrow-left" style="color: #8c0000;"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="search-wrapper">
+        <div class="search-bar">
+            <form action="{{ url_for('students') }}" method="GET" id="search-form">
+                <div class="search-container">
+                    <button type="submit" class="rectangle-link" name="student_button">
+                        <span class="label">STUDENT</span>
+                    </button>
+            
+                    <select name="search_by" id="search_by" class="search-dropdown" onchange="updatePlaceholder()">
+                        <option value="student_id" {% if search_by == 'student_id' %}selected{% endif %}>Student ID</option>
+                        <option value="student_name" {% if search_by == 'student_name' %}selected{% endif %}>Student Name</option>
+                        <option value="gender" {% if search_by == 'gender' %}selected{% endif %}>Gender</option>
+                        <option value="year_lvl" {% if search_by == 'year_lvl' %}selected{% endif %}>Year Level</option>
+                        <option value="course_code" {% if search_by == 'course_code' %}selected{% endif %}>Course Code</option>
+                    </select>
+            
+                    <input type="text" name="search" id="search_input" placeholder="" value="{{ search_keyword }}">
+            
+                    <button type="submit" class="search-button">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col" style="background: linear-gradient(to right, #8C0000, #8C0000); color: white;">STUDENT ID</th>
+                    <th scope="col" style="background: linear-gradient(to right, #8C0000, #BD5006); color: white;">NAME</th>
+                    <th scope="col" style="background: linear-gradient(to right, #BD5006, #BD5006); color: white;">GENDER</th>
+                    <th scope="col" style="background: linear-gradient(to right, #BD5006, #BD5006); color: white;">YEAR LEVEL</th>
+                    <th scope="col" style="background: linear-gradient(to right, #BD5006,#FFBE0F); color: white;">COURSE CODE</th>
+                    <th scope="col" style="background: linear-gradient(to right, #FFBE0F,#FFF200); color: white; width:2cm;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.student_id }}</td>
+                    <td>{{ student.student_name }}</td>
+                    <td>{{ student.gender }}</td>
+                    <td>{{ student.year_lvl }}</td>
+                    <td>{{ student.course_code }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('edit_student', student_id=student.student_id) }}" class="button"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <form action="{{ url_for('remove_student', student_id=student.student_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this student?')">
+                                <button type="submit" class="button"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <a href="{{ url_for('add_student') }}" class="add-student">ADD STUDENT</a>
+    <a href="/" class="button"></a>
+
+    <!---------------------JAVASCRIPT THINGZ----------------------------->
+
+    <script>
+        function updatePlaceholder() {
+            const searchBy = document.getElementById('search_by').value;
+            const searchInput = document.getElementById('search_input');
+
+            if (searchBy === 'student_id') {
+                searchInput.placeholder = 'Search by Student ID';
+            } else if (searchBy === 'student_name') {
+                searchInput.placeholder = 'Search by Student Name';
+            } else if (searchBy === 'year_lvl') {
+                searchInput.placeholder = 'Search by Year Level';
+            } else if (searchBy === 'gender') {
+                searchInput.placeholder = 'Search by Gender';
+            } else if (searchBy === 'course_code') {
+                searchInput.placeholder = 'Search by Course Code';
+            } else if (searchBy === 'college_code') {
+                searchInput.placeholder = 'Search by College Code';
+            }
+        }
+
+        window.onload = function() {
+            updatePlaceholder();  
+        };
+    </script>
+</body>
+</html>

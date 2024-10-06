@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='edit_student.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Edit Student</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>EDIT STUDENT</h1>
+
+        <form action="{{ url_for('students') }}">
+            <button type="submit" class="back-button">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+        </form>
+
+        <form id="editStudentForm" action="{{ url_for('edit_student', student_id=student.student_id) }}" method="post">
+            <div class="form-group">
+                <label for="student_id">STUDENT ID</label>
+                <input type="text" id="student_id" name="student_id" class="dropdown" value="{{ student.student_id }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="student_name">STUDENT NAME</label>
+                <input type="text" id="student_name" name="student_name" class="dropdown" value="{{ student.student_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="gender">GENDER</label>
+                <select class="dropdown" id="gender" name="gender" required>
+                    <option value="MALE" {% if student.gender == 'MALE' %}selected{% endif %}>MALE</option>
+                    <option value="FEMALE" {% if student.gender == 'FEMALE' %}selected{% endif %}>FEMALE</option>
+                    <option value="OTHER" {% if student.gender == 'OTHER' %}selected{% endif %}>OTHER</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="year_lvl">YEAR LEVEL</label>
+                <select class="dropdown" id="year_lvl" name="year_lvl" required>
+                    <option value="1ST YEAR" {% if student.year_lvl == '1ST YEAR' %}selected{% endif %}>1ST YEAR</option>
+                    <option value="2ND YEAR" {% if student.year_lvl == '2ND YEAR' %}selected{% endif %}>2ND YEAR</option>
+                    <option value="3RD YEAR" {% if student.year_lvl == '3RD YEAR' %}selected{% endif %}>3RD YEAR</option>
+                    <option value="4TH YEAR" {% if student.year_lvl == '4TH YEAR' %}selected{% endif %}>4TH YEAR</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="college_code">COLLEGE</label>
+                <select class="dropdown" id="college_code" name="college_code" required>
+                    <option value="" disabled>Select a college</option>
+                    {% for college in colleges %}
+                        <option value="{{ college.college_code }}" {% if student.college_code == college.college_code %}selected{% endif %}>
+                            {{ college.college_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="course_code">COURSE</label>
+                <select class="dropdown" id="course_code" name="course_code" required>
+                    <option value="" disabled>Select a course</option>
+                </select>
+            </div>
+
+            <button type="submit" class="update-button">SAVE CHANGES</button>
+        </form>
+    </div>
+
+    <!--------------------------------JavaScript Logic--------------------------------------->
+    <script>
+        function loadCourses(college_code, selected_course) {
+            $.ajax({
+                url: "{{ url_for('get_courses', college_code='') }}" + college_code,
+                method: 'GET',
+                success: function(data) {
+                    $('#course_code').empty();
+                    $('#course_code').append('<option value="" disabled>Select a course</option>');
+                    $.each(data, function(index, course) {
+                        var selected = (course.course_code === selected_course) ? 'selected' : '';
+                        $('#course_code').append('<option value="' + course.course_code + '" ' + selected + '>' + course.course_name + '</option>');
+                    });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX request failed: ", textStatus, errorThrown);
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            var selectedCollegeCode = $('#college_code').val();
+            var selectedCourseCode = "{{ student.course_code }}";
+            if (selectedCollegeCode) {
+                loadCourses(selectedCollegeCode, selectedCourseCode);
+            }
+
+            $('#college_code').change(function() {
+                var college_code = $(this).val();
+                loadCourses(college_code, null);
+            });
+
+            $('#editStudentForm').on('submit', function(event) {
+                event.preventDefault(); 
+
+                var userConfirmed = confirm('r u shur u wanna update dis student?');
+
+                if (userConfirmed) {
+                    var formData = {
+                        student_name: $('#student_name').val(),
+                        gender: $('#gender').val(),
+                        year_lvl: $('#year_lvl').val(),
+                        college_code: $('#college_code').val(),
+                        course_code: $('#course_code').val()
+                    };
+
+                    $.ajax({
+                        url: "{{ url_for('edit_student', student_id=student.student_id) }}", 
+                        type: 'POST',
+                        data: formData,
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                alert('Yippie! student has been updated.');
+                                window.location.href = "{{ url_for('students') }}"; 
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function(xhr) {
+                            alert('An error occurred. Please try again.');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

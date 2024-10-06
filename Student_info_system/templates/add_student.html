@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='add_student.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Add Student</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>ADD STUDENT</h1>
+
+        <form action="{{ url_for('students') }}">
+            <button type="submit" class="back-button">
+                <i class="fa-solid fa-arrow-left" style="color: #8c0000;"></i>
+            </button>
+        </form>
+      
+        <div id="notification" class="notification" style="display: none;"></div>
+
+        <form action="{{ url_for('add_student') }}" method="POST" id="addStudentForm">
+            <label for="student_id">STUDENT ID</label>
+            <input type="text" class="dropdown" id="student_id" name="student_id" placeholder="YYYY-NNNN" required maxlength="9" autocomplete="off">
+
+            <label for="student_name">STUDENT NAME</label>
+            <input type="text" class="dropdown" id="student_name" name="student_name" placeholder="eg.(Lavigne Kaye Sistona)" required>
+
+            <label for="gender">GENDER</label>
+            <select class="dropdown" id="gender" name="gender" required>
+                <option value="Male">MALE</option>
+                <option value="Female">FEMALE</option>
+                <option value="Other">OTHERS</option>
+            </select>
+
+            <label for="year_lvl">YEAR LEVEL</label>
+            <select class="dropdown" id="year_lvl" name="year_lvl" required>
+                <option value="1st year">1ST YEAR</option>
+                <option value="2nd year">2ND YEAR</option>
+                <option value="3rd year">3RD YEAR</option>
+                <option value="4th year">4TH YEAR</option>
+            </select>
+
+            <label for="college_code">COLLEGE</label>
+            <select class="dropdown" id="college_code" name="college_code" required>
+                <option value="" disabled selected>Select a college</option>
+                {% for college in colleges %}
+                    <option value="{{ college.college_code }}">{{ college.college_name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="course_code">COURSE</label>
+            <select class="dropdown" id="course_code" name="course_code" required>
+                <option value="" disabled selected>Select a course</option>
+            </select>
+
+            <button type="submit" class="add-button">ADD STUDENT</button>
+        </form>
+    </div>
+
+    <!--------------------------------JAVASCRIPT THINGZ--------------------------------------->
+    <script>
+        $(document).ready(function() {
+            $('#student_id').on('input', function(event) {
+                let input = this.value.replace(/[^0-9]/g, '');
+                
+                if (input.length > 8) {
+                    input = input.slice(0, 8);
+                }
+                if (input.length > 4) {
+                    input = input.slice(0, 4) + '-' + input.slice(4);
+                }
+
+                this.value = input;
+            });
+
+
+            $('#student_id').on('keypress', function(event) {
+                const charCode = (event.which) ? event.which : event.keyCode;
+
+                if ((charCode < 48 || charCode > 57) && charCode !== 45) {
+                    event.preventDefault(); 
+                }
+                if (this.value.length >= 9 && !(charCode === 8 || charCode === 46)) {
+                    event.preventDefault();
+                }
+            });
+
+            $('#addStudentForm').on('submit', function(event) {
+                event.preventDefault(); 
+                
+                var studentId = $('#student_id').val();
+                var collegeCode = $('#college_code').val();
+                var courseCode = $('#course_code').val();
+
+                $.ajax({
+                    url: "{{ url_for('check_student_existence') }}",  
+                    type: 'POST',
+                    data: {
+                        student_id: studentId,
+                        course_code: courseCode,
+                        college_code: collegeCode
+                    },
+                    success: function(response) {
+                        if (response.exists) {
+                            var message = '';
+                            if (response.id_exists) {
+                                message += 'Student Id existz. ';
+                            }
+                            if (!response.course_exists) {
+                                message += 'course doez not exizt.';
+                            }
+                            message += 'Plez enter new student ID.';
+
+                            if (confirm(message)) {
+                                $('#addStudentForm').off('submit').submit(); 
+                            } else {
+                                window.location.href = "{{ url_for('add_student') }}"; 
+                            }
+                        } else {
+                            if (confirm('r u shur u wanna add dis student?')) {
+                                $('#addStudentForm').off('submit').submit(); 
+                            } else {
+                                window.location.href = "{{ url_for('add_student') }}"; 
+                            }
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX request failed: ", textStatus, errorThrown);
+                        showNotification('An error occurred while checking student existence. Please try again.', 'danger');
+                    }
+                });
+            });
+    
+            function showNotification(message, type) {
+                var notification = document.getElementById('notification');
+                notification.style.display = "block";
+                notification.innerHTML = message;
+                notification.className = "notification " + type;
+            }
+    
+            $('#college_code').change(function() {
+                var college_code = $(this).val();
+                $.ajax({
+                    url: "{{ url_for('get_courses', college_code='') }}" + college_code,
+                    method: 'GET',
+                    success: function(data) {
+                        $('#course_code').empty();
+                        $('#course_code').append('<option value="" disabled selected>Select a course</option>');
+                        $.each(data, function(index, course) {
+                            $('#course_code').append('<option value="' + course.course_code + '">' + course.course_name + '</option>');
+                        });
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX request failed: ", textStatus, errorThrown);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

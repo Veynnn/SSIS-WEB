@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='courses.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="header">
+        <div class="student-info">STUDENT INFORMATION SYSTEM</div>
+        
+        <div class="nav-buttons">
+            <a href="{{ url_for('colleges') }}" class="nav-button">Colleges</a>
+            <a href="{{ url_for('students') }}" class="nav-button">Students</a>
+        </div>
+    
+        <form action="{{ url_for('index') }}">
+            <button class="button">
+                <i class="fa-solid fa-arrow-left" style="color: #8c0000;"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="search-wrapper">
+        <div class="search-bar">
+            <form action="{{ url_for('courses') }}" method="GET" id="search-form">
+                <div class="search-container">
+
+                    <button type="submit" class="rectangle-link" name="course_button">
+                        <span class="label">COURSE</span>
+                    </button>
+            
+                    <select name="search_by" id="search_by" class="search-dropdown" onchange="updatePlaceholder()">
+                        <option value="college_code" {% if search_by == 'college_code' %}selected{% endif %}>College Code</option>
+                        <option value="course_code" {% if search_by == 'course_code' %}selected{% endif %}>Course Code</option>
+                        <option value="course_name" {% if search_by == 'course_name' %}selected{% endif %}>Course Name</option>
+                    </select>
+            
+                    <input type="text" name="search" id="search_input" placeholder="" value="{{ search_keyword }}" >
+            
+                    <button type="submit" class="search-button">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+    
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col" style="background: linear-gradient(to right, #8C0000, #9E1D02); color: white;">COLLEGE CODE</th>
+                    <th scope="col" style="background: linear-gradient(to right, #9E1D02, #BD5006); color: white;">COURSE CODE</th>
+                    <th scope="col" style="background: linear-gradient(to right, #BD5006, #FFBE0F, #FFF200); color: white;">COURSE NAME</th>
+                    <th scope="col" style="background: linear-gradient(to right, #FFF200,#FFF200); color: white; width:2cm;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>{{ course.college_code if course.college_code else 'None' }}</td>
+                    <td>{{ course.course_code }}</td>
+                    <td>{{ course.course_name }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('edit_course', course_code=course.course_code) }}" class="button"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <form action="{{ url_for('remove_course', course_code=course.course_code) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this course?')">
+                                <button type="submit" class="button"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <a href="{{ url_for('add_course') }}" class="add-course">ADD COURSE</a>
+    <a href="/" class="button"></a>
+
+<!---------------------JAVASCRIPT THINGZ----------------------------->
+
+<script>
+    function updatePlaceholder() {
+        const searchBy = document.getElementById('search_by').value;
+        const searchInput = document.getElementById('search_input');
+
+        if (searchBy === 'college_code') {
+            searchInput.placeholder = 'Search by College Code';
+        } else if (searchBy === 'course_code') {
+            searchInput.placeholder = 'Search by Course Code';
+        } else if (searchBy === 'course_name') {
+            searchInput.placeholder = 'Search by Course Name';
+        }
+    }
+
+    window.onload = function() {
+        updatePlaceholder();  
+    };
+</script>
+</body>
+</html>

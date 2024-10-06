@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='edit_course.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Edit Course</title>
+</head>
+
+
+<body>
+    <div class="container">
+        <h1>EDIT COURSE</h1>
+
+        <form action="{{ url_for('courses') }}">
+            <button type="submit" class="back-button">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+        </form>
+
+        <form id="editCourseForm" action="{{ url_for('edit_course', course_code=course.course_code) }}" method="post">
+
+            <div class="form-group"></div>
+                <label for="college_code">COLLEGE CODE</label>
+                <select class="dropdown" id="college_code" name="college_code" class="form-control" required>
+                    {% for college in colleges %}
+                    <option value="{{ college.college_code }}" {% if course.college_code == college.college_code %}selected{% endif %}>{{ college.college_name }}</option>
+                    {% endfor %}
+                </select>
+
+            <div class="form-group">
+                <label for="course_code">COURSE CODE</label>
+                <input type="text" id="course_code" name="course_code" class="form-control" value="{{ course.course_code }}" required>
+            </div>
+
+            
+            <div class="form-group">
+                <label for="course_name">COURSE NAME</label>
+                <input type="text" id="course_name" name="course_name" class="form-control" value="{{ course.course_name }}" required>
+            </div>
+
+            <button type="submit" class="update-button">UPDATE COURSE</button>
+        </form>
+    </div>
+
+
+
+
+
+
+<!--------------------------------JAVASCRIPT THINGZ--------------------------------------->
+<script>
+    $(document).ready(function() {
+        $('#editCourseForm').on('submit', function(event) {
+            event.preventDefault(); 
+
+            var userConfirmed = confirm('r u shur u wanna update dis course?');
+
+            if (userConfirmed) {
+                var formData = {
+                    course_name: $('#course_name').val(),
+                    course_code: $('#course_code').val(),
+                    college_code: $('#college_code').val()
+                };
+
+                $.ajax({
+                    url: "{{ url_for('edit_course', course_code=course.course_code) }}", 
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('yippie! course has been updated.');
+                            window.location.href = "{{ url_for('courses') }}"; 
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('An error occurred. Please try again.');
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+ 
+</body>
+</html>

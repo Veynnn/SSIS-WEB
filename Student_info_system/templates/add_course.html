@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='add_course.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Add Course</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>ADD COURSE</h1>
+
+        <form action="{{ url_for('courses') }}">
+            <button type="submit" class="back-button">
+                <i class="fa-solid fa-arrow-left" style="color: #8c0000;"></i>
+            </button>
+        </form>
+
+        <div id="notification" class="notification" style="display: none;"></div>
+
+        <form action="{{ url_for('add_course') }}" method="POST" id="addCourseForm">
+            <label for="college_code">COLLEGE CODE</label>
+            <select class="dropdown" id="college_code" name="college_code" required>
+                {% for college in colleges %}
+                <option class="dropdown-option" value="{{ college.college_code }}">{{ college.college_name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="course_code">COURSE CODE</label>
+            <input type="text" id="course_code" name="course_code" required>
+
+            <label for="course_name">COURSE NAME</label>
+            <input type="text" id="course_name" name="course_name" required>
+
+            <button type="submit" class="add-button">ADD COURSE</button>
+        </form>
+    </div>
+
+    <!--------------------------------JAVASCRIPT THINGZ--------------------------------------->
+    <script>
+        $(document).ready(function () {
+            $('#addCourseForm').on('submit', function (event) {
+                event.preventDefault();
+    
+                var courseCode = $('#course_code').val();
+                var courseName = $('#course_name').val();
+                var collegeCode = $('#college_code').val();
+                
+                $.ajax({
+                    url: "{{ url_for('check_course_existence') }}",
+                    type: 'POST',
+                    data: {
+                        course_code: courseCode,
+                        course_name: courseName,
+                        college_code: collegeCode
+                    },
+                    success: function (response) {
+                        if (response.exists) {
+                            var message = 'The following issues were found:\n';
+            
+                            if (response.name_exists) {
+                                message += '- Course Name already exists for this college.\n';
+                            }
+                            if (response.code_exists) {
+                                message += '- Course Code already exists for this college.\n';
+                            }
+                            message += 'Please enter a new course.';
+            
+                            var userChoice = confirm(message + '\n\nDo you want to try again? Click "Cancel" to go to the Courses page.');
+                            
+                            if (userChoice) {
+                                window.location.href = "{{ url_for('add_course') }}"; 
+                            } else {
+                                window.location.href = "{{ url_for('courses') }}"; 
+                            }
+                        } else {
+                            if (confirm('Are you sure you want to add this course?')) {
+                                $('#addCourseForm').off('submit').submit();
+                            } else {
+                                window.location.href = "{{ url_for('add_course') }}"; 
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>
