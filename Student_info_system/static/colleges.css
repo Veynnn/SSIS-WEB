@@ -1,0 +1,214 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to left, #feedc4 0%, #FFFFFF 100%);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    box-sizing: border-box;
+    margin-top: -15px;
+}
+
+.header .student-info {
+    font-size: 50px;
+    color: #8C0000;
+    font-family: 'Bebas Neue', sans-serif;
+    padding: 0;
+}
+
+
+.nav-buttons {
+    display: flex;
+    gap: 15px; 
+    margin-top: 8px;
+    margin-left: 750px;
+}
+
+
+.nav-button {
+    text-decoration: none;
+    color: #8C0000; 
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px; 
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+
+.nav-button:hover {
+    color: #FFBE0F; 
+}
+
+
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    margin-right: 250px;
+}
+
+.search-dropdown-container {
+    margin-right: 20px; 
+}
+
+
+.search-dropdown {
+    padding: 5px ; 
+    border-radius: 25px; 
+    border: 1px solid #8c0000; 
+    font-size: 16px; 
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    color: #0f0f0f;
+}
+
+
+.search-bar {
+    display: flex;
+    align-items: center;
+}
+
+.search-bar input[type=text] {
+    padding: 6px ;
+    border-radius: 25px;
+    border: 1px solid #8c0000;
+    font-size: 16px;
+    width: 550px;
+    outline: none;
+    margin-right: -4px; 
+    font-family: 'Poppins', sans-serif;
+}
+
+.search-bar button[type=submit] {
+    background-color: transparent; 
+    color: #8C0000;
+    border: none;
+    cursor: pointer;
+    padding: 12px 20px;
+    border-radius: 25px;
+    margin-left: -60px; 
+    font-size: 20px;
+}
+
+.label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px; 
+    color: #8C0000;
+    vertical-align: middle; 
+    position: absolute; 
+    top: 85px; 
+    left: 180px; 
+}
+
+.label:hover {
+    color: #FFBE0F; 
+}
+
+.search-bar button[type=submit]:hover {
+    color: #FFBE0F; 
+}
+
+table tbody tr:hover {
+    background-color: #FFBE0F; 
+    color: white; 
+}
+
+.table-container {
+    width: 80%;
+    height: calc(115vh - 400px); 
+    overflow-y: auto;
+    margin-bottom: 20px;
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    text-align: left;
+}
+
+table th {
+    padding: 8.5px;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(to right, #8C0000, #FFBE0F);
+    font-weight: bold;
+    color: #FFFFFF;
+    z-index: 1;
+}
+
+table td {
+    padding: 9px;
+    font-weight: 500;
+    color: #8C0000;
+    background-color: #FBE5AB;
+}
+
+table tbody tr:hover td {
+    background-color: #f7cb50; 
+    color: white; 
+}
+
+.button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 10px;
+    width: 1cm;
+}
+
+.button i {
+    font-size: 30px;
+    color: #8c0000;
+}
+
+.button:hover {
+    color: #FFBE0F;
+    transform: scale(1.1);
+}
+
+.add-college {
+    align-self: center;
+    margin-top: 15px;
+    padding: 10px 150px;
+    border: none;
+    background: linear-gradient(to right, #8C0000 26%, #FFBE0F 87%); 
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 15px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.add-college:hover {
+    background: #FFBE0F;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.action-buttons form {
+    margin: 0;
+}

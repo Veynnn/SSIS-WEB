@@ -1,0 +1,121 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: #FBE5AB;
+    padding: 80px 360px;
+    border-radius: 50px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: left;
+}
+
+
+h1 {
+    color: #8C0000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    margin-bottom: 10px;
+    margin-left: -320px;
+    margin-top: -60px;
+    letter-spacing: 3px; 
+}
+
+.back-button {
+    background-color: transparent;
+    text-align: right;
+    margin-bottom: -150px;
+    margin-top: -120px;
+    color: none;
+    border: none;
+    padding: -10px;
+    font-size: 50px;
+    margin-left: 670px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap:30px;
+}
+
+label {
+    
+    color: #8C0000;
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: left;
+    margin-left: -320px;
+    margin-bottom:-25px;
+}
+
+.dropdown {
+    padding: 10px ;
+    font-size: 18px;
+    border-radius: 15px;
+    width: 1023px;
+    margin-left: -322px;
+    border: 1px solid #FCEDD0;
+    background-color: #FCEDD0;
+}
+
+.dropdown-option {
+    background-color: #FCEDD0
+}
+
+.dropdown-option:hover {
+    background-color: #FAB60E;
+}
+
+
+input {
+    padding: 10px ;
+    font-size: 18px;
+    border-radius: 15px;
+    width: 1000px;
+    margin-left: -320px;
+    color: #343131;
+    border: 1px solid #FCEDD0;
+    background-color: #FCEDD0;
+}
+
+
+
+.add-button {
+    background: linear-gradient(90deg, #8C0000 26%, #FFBE0F 87%);
+    font-family: 'Poppins',sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 30px;
+    padding: 10PX;
+    color: white;
+    cursor: pointer;
+    margin-left: -320px;
+    width: 1020px;
+    margin-bottom: -20px;
+    margin-top: 10px;
+    
+}
+
+.add-button:hover {
+    background: #FFBE0F ;
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 90%;
+        padding: 1.5em;
+    }
+}
