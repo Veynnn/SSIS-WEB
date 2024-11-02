@@ -20,8 +20,6 @@
             </button>
         </form>
 
-        <div id="notification" class="notification" style="display: none;"></div>
-
         <form action="{{ url_for('add_course') }}" method="POST" id="addCourseForm">
             <label for="college_code">COLLEGE CODE</label>
             <select class="dropdown" id="college_code" name="college_code" required>
@@ -46,13 +44,14 @@
             $('#addCourseForm').on('submit', function (event) {
                 event.preventDefault();
     
-                var courseCode = $('#course_code').val();
-                var courseName = $('#course_name').val();
-                var collegeCode = $('#college_code').val();
+                var courseCode = $('#course_code').val().toUpperCase();
+                var courseName = $('#course_name').val().toUpperCase();
+                var collegeCode = $('#college_code').val().toUpperCase();
                 
                 $.ajax({
-                    url: "{{ url_for('check_course_existence') }}",
+                    url: "{{ url_for('check_course_existence') }}",  
                     type: 'POST',
+                    dataType: 'json',  
                     data: {
                         course_code: courseCode,
                         course_name: courseName,
@@ -60,35 +59,50 @@
                     },
                     success: function (response) {
                         if (response.exists) {
-                            var message = 'The following issues were found:\n';
-            
-                            if (response.name_exists) {
-                                message += '- Course Name already exists for this college.\n';
+                            var message = '';
+                            if (response.name_exists && response.code_exists) {
+                                message = 'Both the course name and code already exist. Please choose different values.';
+                            } else if (response.name_exists) {
+                                message = 'The course name already exists for this college. Please choose a different name.';
+                            } else if (response.code_exists) {
+                                message = 'The course code already exists, please try again.'; 
                             }
-                            if (response.code_exists) {
-                                message += '- Course Code already exists for this college.\n';
-                            }
-                            message += 'Please enter a new course.';
-            
-                            var userChoice = confirm(message + '\n\nDo you want to try again? Click "Cancel" to go to the Courses page.');
-                            
-                            if (userChoice) {
-                                window.location.href = "{{ url_for('add_course') }}"; 
-                            } else {
-                                window.location.href = "{{ url_for('courses') }}"; 
-                            }
+                            alert(message);
                         } else {
-                            if (confirm('Are you sure you want to add this course?')) {
-                                $('#addCourseForm').off('submit').submit();
-                            } else {
-                                window.location.href = "{{ url_for('add_course') }}"; 
+                            if (confirm('Do you want to add this course?')) {
+                    
+
+                                $.ajax({
+                                    url: "{{ url_for('add_course') }}",  
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {
+                                        course_code: courseCode,
+                                        course_name: courseName,
+                                        college_code: collegeCode
+                                    },
+                                    success: function (addResponse) {
+                                        alert(addResponse.message); 
+                                        if (addResponse.success) {
+                                            window.location.href = "{{ url_for('courses') }}";  
+                                        }
+                                    },
+                                    error: function () {
+                                        alert('Error occurred while adding the course.');
+                                    }
+                                });
                             }
                         }
+                    },
+                    error: function () {
+                        alert('Error occurred during course existence check.');
                     }
                 });
             });
         });
     </script>
+    
+    
     
 </body>
 </html>

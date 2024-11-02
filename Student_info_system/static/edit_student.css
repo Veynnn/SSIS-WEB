@@ -4,8 +4,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 140vh;
-    margin: 0;
+    height: 1000;
+    margin-top: 50px;
+    margin-bottom: 50px;
 }
 
 .container {
@@ -118,4 +119,36 @@ input {
         width: 90%;
         padding: 1.5em;
     }
+}
+
+.image-container {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+#imagePreview {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+#deleteImageButton {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 5px;
+}
+
+#deleteImageButton:hover {
+    background: darkred;
+}
+.update-button {
+    margin-top: 20px;
 }

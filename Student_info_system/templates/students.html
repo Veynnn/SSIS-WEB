@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+
 </head>
 <body>
     <div class="header">
@@ -56,6 +58,7 @@
         <table>
             <thead>
                 <tr>
+                    <th scope="col" style="background: linear-gradient(to right, #8C0000, #8C0000); color: white;">PROFILE</th>
                     <th scope="col" style="background: linear-gradient(to right, #8C0000, #8C0000); color: white;">STUDENT ID</th>
                     <th scope="col" style="background: linear-gradient(to right, #8C0000, #BD5006); color: white;">NAME</th>
                     <th scope="col" style="background: linear-gradient(to right, #BD5006, #BD5006); color: white;">GENDER</th>
@@ -67,6 +70,7 @@
             <tbody>
                 {% for student in students %}
                 <tr>
+                    <td><img src="{{ student.image_url if student.image_url else url_for('static', filename='EYYY.jpg') }}"  class="profile-image"></td>
                     <td>{{ student.student_id }}</td>
                     <td>{{ student.student_name }}</td>
                     <td>{{ student.gender }}</td>

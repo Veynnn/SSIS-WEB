@@ -1,6 +1,9 @@
 from flask import render_template, request, redirect, url_for, flash, abort,jsonify
 from __init__ import app
 from models import execute_query, fetch_query
+from cloudinary_config import upload_result,cloudinary
+from cloudinary import uploader
+import os
 
 
 
@@ -192,27 +195,25 @@ def add_course():
         college_code = request.form['college_code'].upper()
 
         try:
-            #------------------- Check sa existing courses-----------------------
             query_name_check = "SELECT * FROM courses WHERE course_name = %s AND college_code = %s"
             existing_name = fetch_query(query_name_check, (course_name, college_code))
 
-            query_code_check = "SELECT * FROM courses WHERE course_code = %s AND college_code = %s"
-            existing_code = fetch_query(query_code_check, (course_code, college_code))
+            query_code_check_global = "SELECT * FROM courses WHERE course_code = %s"
+            existing_code = fetch_query(query_code_check_global, (course_code,))
 
-            #---------------error handling--------------------------
             if existing_name and existing_code:
-                return jsonify({'success': False, 'message': 'Both the course name and code already exist for this college. Please choose different values.'})
+                return jsonify({'success': False, 'message': 'Both the course name and code already exist. Please choose different values.'})
             elif existing_name:
                 return jsonify({'success': False, 'message': 'The course name already exists for this college. Please choose a different name.'})
             elif existing_code:
-                return jsonify({'success': False, 'message': 'The course code already exists for this college. Please choose a different code.'})
+                return jsonify({'success': False, 'message': 'The course code already exists across all colleges. Please choose a different code.'})  # Global check message
             else:
                 query = "INSERT INTO courses (course_name, course_code, college_code) VALUES (%s, %s, %s)"
                 execute_query(query, (course_name, course_code, college_code))
                 return jsonify({'success': True, 'message': 'Course added successfully.'})
 
-        except Exception:
-            return jsonify({'success': False})  
+        except Exception as e:
+            return jsonify({'success': False, 'message': 'Error occurred: ' + str(e)})  
 
     college_query = "SELECT college_code, college_name FROM colleges"
     colleges = fetch_query(college_query)
@@ -226,21 +227,21 @@ def check_course_existence():
 
     try:
         query_name_check = "SELECT * FROM courses WHERE course_name = %s AND college_code = %s"
-        query_code_check = "SELECT * FROM courses WHERE course_code = %s AND college_code = %s"
+        query_code_check_global = "SELECT * FROM courses WHERE course_code = %s"  
 
         existing_name = fetch_query(query_name_check, (course_name, college_code))
-        existing_code = fetch_query(query_code_check, (course_code, college_code))
+        existing_code = fetch_query(query_code_check_global, (course_code,))
 
         response = {
             'exists': bool(existing_name or existing_code),
             'name_exists': bool(existing_name),
-            'code_exists': bool(existing_code)
+            'code_exists': bool(existing_code)  
         }
 
         return jsonify(response)
     except Exception as e:
-        print(f"Error checking course existence: {e}")  
-        return jsonify({'exists': False, 'name_exists': False, 'code_exists': False})
+        print(f"Error checking course existence: {e}")
+        return jsonify({'exists': False, 'name_exists': False, 'code_exists': False, 'message': 'Error occurred while checking course existence.'})  # Ensure a clear error message
 
 
 #---------------------Edit Course----------------------
@@ -310,13 +311,16 @@ def remove_course(course_code):
 
 
 
-# STUDENTZZ
-#---------------------Student Page----------------------
+# Placeholder image URL if no image is uploaded
+DEFAULT_PROFILE_IMAGE = os.path.join('static', 'EYYY.jpg')
+
+#--------------------- Student Page ----------------------
 @app.route('/students', methods=['GET'])
 def students():
     search_keyword = request.args.get('search', '')
-    search_by = request.args.get('search_by', 'student_id')  
+    search_by = request.args.get('search_by', 'student_id')
 
+    # Redirect if the 'student_button' is pressed
     if 'student_button' in request.args:
         return redirect(url_for('students'))
 
@@ -330,20 +334,22 @@ def students():
         students.student_name, 
         students.gender, 
         students.year_lvl, 
-        courses.course_code AS course_code, 
-        colleges.college_code AS college_code, 
+        COALESCE(students.image_url, %s) AS image_url,  -- Default if image URL is NULL
+        courses.course_code, 
+        colleges.college_code, 
         courses.course_name, 
         colleges.college_name
     FROM students
     LEFT JOIN courses ON students.course_code = courses.course_code
     LEFT JOIN colleges ON students.college_code = colleges.college_code
     WHERE students.{search_by} LIKE %s
-    """ 
-    students = fetch_query(query, ('%' + search_keyword + '%',))
+    """
+    students = fetch_query(query, (DEFAULT_PROFILE_IMAGE, '%' + search_keyword + '%'))
 
-    return render_template('students.html', students=students, search_keyword=search_keyword)
+    return render_template('students.html', students=students, search_keyword=search_keyword, default_profile_image=DEFAULT_PROFILE_IMAGE)
 
-#---------------------Add Student----------------------
+
+#--------------------- Add Student ----------------------
 @app.route('/add_student', methods=['GET', 'POST'])
 def add_student():
     if request.method == 'POST':
@@ -354,23 +360,29 @@ def add_student():
         course_code = request.form['course_code'].upper()
         college_code = request.form['college_code'].upper()
 
+        image_file = request.files.get('image')
+        image_url = DEFAULT_PROFILE_IMAGE
+        if image_file:
+            upload_result = uploader.upload(image_file)
+            image_url = upload_result['secure_url']
 
-        #--------------------Existing course code and stuff --------------
         query_id_check = "SELECT * FROM students WHERE student_id = %s"
         existing_id = fetch_query(query_id_check, (student_id,))
 
         query_course_check = "SELECT * FROM courses WHERE course_code = %s AND college_code = %s"
         existing_course = fetch_query(query_course_check, (course_code, college_code))
 
-
-        #---------------error handling--------------
+    
         if existing_id:
-            flash('Cannot add student. The student ID already exists.', 'danger')
+            return jsonify({'status': 'duplicate'}), 400
         elif not existing_course:
             flash('Cannot add student. The selected course does not exist for this college.', 'danger')
         else:
-            query = "INSERT INTO students (student_id, student_name, gender, year_lvl, course_code, college_code) VALUES (%s, %s, %s, %s, %s, %s)"
-            execute_query(query, (student_id, student_name, gender, year_lvl, course_code, college_code))
+            query = """
+                INSERT INTO students (student_id, student_name, gender, year_lvl, course_code, college_code, image_url) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            execute_query(query, (student_id, student_name, gender, year_lvl, course_code, college_code, image_url))
             flash('Student added successfully', 'success')
             return redirect(url_for('students'))
 
@@ -382,13 +394,14 @@ def add_student():
     return render_template('add_student.html', colleges=colleges)
 
 
-    #-------------ajax thingz-------------
+#--------------------- AJAX Check Student Existence ----------------------
 @app.route('/check_student_existence', methods=['POST'])
 def check_student_existence():
     student_id = request.form.get('student_id').upper()
     course_code = request.form.get('course_code').upper()
     college_code = request.form.get('college_code').upper()
 
+    # Check if student ID or course exists
     query_id_check = "SELECT * FROM students WHERE student_id = %s"
     existing_id = fetch_query(query_id_check, (student_id,))
 
@@ -397,7 +410,7 @@ def check_student_existence():
 
     response = {
         'exists': False,
-        'id_exists': bool(existing_id),  
+        'id_exists': bool(existing_id),
         'course_exists': bool(existing_course)
     }
 
@@ -407,7 +420,8 @@ def check_student_existence():
     return jsonify(response)
 
 
-#---------------------Edit Student----------------------
+#--------------------- Edit Student ----------------------
+
 @app.route('/edit_student/<student_id>', methods=['GET', 'POST'])
 def edit_student(student_id):
     if request.method == 'POST':
@@ -417,59 +431,57 @@ def edit_student(student_id):
         course_code = request.form['course_code'].upper()
         college_code = request.form['college_code'].upper()
 
+        image_file = request.files.get('image')
+        current_image_url = request.form.get('current_image_url', DEFAULT_PROFILE_IMAGE)
+
+        if request.form.get('delete_image') == "true": 
+            image_url = DEFAULT_PROFILE_IMAGE  
+        elif image_file:
+            upload_result = uploader.upload(image_file)
+            image_url = upload_result['secure_url']
+        else:
+            image_url = current_image_url  
+
         try:
             update_student_query = """
             UPDATE students 
-            SET student_name = %s, gender = %s, year_lvl = %s, course_code = %s, college_code = %s
+            SET student_name = %s, gender = %s, year_lvl = %s, course_code = %s, college_code = %s, image_url = %s
             WHERE student_id = %s
             """
-            execute_query(update_student_query, (student_name, gender, year_lvl, course_code, college_code, student_id))
-
-            return jsonify({
-                'status': 'success',
-                'message': 'Student updated successfully.'
-            }), 200
+            execute_query(update_student_query, (student_name, gender, year_lvl, course_code, college_code, image_url, student_id))
+            flash('Student updated successfully', 'success')
+            return redirect(url_for('students'))
 
         except Exception as e:
             print(f"Error updating student: {e}")
-
-            return jsonify({
-                'status': 'error',
-                'message': 'An error occurred while updating the student. Please try again.'
-            }), 500
+            flash('An error occurred while updating the student. Please try again.', 'danger')
+            return redirect(url_for('edit_student', student_id=student_id))
 
     student_query = """
-    SELECT students.student_id, students.student_name, students.gender, students.year_lvl,
-           students.course_code, students.college_code,
-           courses.course_code AS course_code, courses.course_name AS course_name,
-           colleges.college_code AS college_code, colleges.college_name AS college_name
+    SELECT students.*, COALESCE(students.image_url, %s) AS image_url
     FROM students
-    LEFT JOIN courses ON students.course_code = courses.course_code
-    LEFT JOIN colleges ON students.college_code = colleges.college_code
     WHERE students.student_id = %s
     """
-    students = fetch_query(student_query, (student_id,))
+    student = fetch_query(student_query, (DEFAULT_PROFILE_IMAGE, student_id))
     
-    if not students:
+    if not student:
         abort(404)
-
-    student = students[0]
 
     college_query = "SELECT college_code, college_name FROM colleges"
     colleges = fetch_query(college_query)
 
-    return render_template('edit_student.html', student=student, colleges=colleges)
+    return render_template('edit_student.html', student=student[0], colleges=colleges)
 
 
+#--------------------- Fetch Courses by College ----------------------
 @app.route('/get_courses/<college_code>', methods=['GET'])
 def get_courses(college_code):
-    print(f"Fetching courses for college_code: {college_code}")  
     course_query = "SELECT course_code, course_name FROM courses WHERE college_code = %s"
     courses = fetch_query(course_query, (college_code,))
-    print(f"Courses found: {courses}")  
     return jsonify(courses)
 
-#---------------------Remove Student----------------------
+
+#--------------------- Remove Student ----------------------
 @app.route('/remove_student/<string:student_id>', methods=['POST'])
 def remove_student(student_id):
     delete_query = "DELETE FROM students WHERE student_id = %s"
@@ -477,4 +489,3 @@ def remove_student(student_id):
     
     flash('Student removed successfully', 'success')
     return redirect(url_for('students'))
-

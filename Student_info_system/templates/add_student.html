@@ -22,7 +22,7 @@
       
         <div id="notification" class="notification" style="display: none;"></div>
 
-        <form action="{{ url_for('add_student') }}" method="POST" id="addStudentForm">
+        <form action="{{ url_for('add_student') }}" method="POST" enctype="multipart/form-data" id="addStudentForm">
             <label for="student_id">STUDENT ID</label>
             <input type="text" class="dropdown" id="student_id" name="student_id" placeholder="YYYY-NNNN" required maxlength="9" autocomplete="off">
 
@@ -57,11 +57,17 @@
                 <option value="" disabled selected>Select a course</option>
             </select>
 
+            <label for="image">PROFILE IMAGE (Optional)</label>
+            <input type="file" id="image" name="image" accept="image/*" onchange="previewImage(event)">
+            <div class="image-preview-container">
+                <img id="imagePreview" src="#" alt="Image Preview" style="display: none; max-width: 150px; margin-top: 10px;">
+                <button type="button" id="deleteImage" class="delete-image" style="display: none;">&times;</button>
+            </div>
+
             <button type="submit" class="add-button">ADD STUDENT</button>
         </form>
     </div>
 
-    <!--------------------------------JAVASCRIPT THINGZ--------------------------------------->
     <script>
         $(document).ready(function() {
             $('#student_id').on('input', function(event) {
@@ -73,74 +79,9 @@
                 if (input.length > 4) {
                     input = input.slice(0, 4) + '-' + input.slice(4);
                 }
-
+    
                 this.value = input;
             });
-
-
-            $('#student_id').on('keypress', function(event) {
-                const charCode = (event.which) ? event.which : event.keyCode;
-
-                if ((charCode < 48 || charCode > 57) && charCode !== 45) {
-                    event.preventDefault(); 
-                }
-                if (this.value.length >= 9 && !(charCode === 8 || charCode === 46)) {
-                    event.preventDefault();
-                }
-            });
-
-            $('#addStudentForm').on('submit', function(event) {
-                event.preventDefault(); 
-                
-                var studentId = $('#student_id').val();
-                var collegeCode = $('#college_code').val();
-                var courseCode = $('#course_code').val();
-
-                $.ajax({
-                    url: "{{ url_for('check_student_existence') }}",  
-                    type: 'POST',
-                    data: {
-                        student_id: studentId,
-                        course_code: courseCode,
-                        college_code: collegeCode
-                    },
-                    success: function(response) {
-                        if (response.exists) {
-                            var message = '';
-                            if (response.id_exists) {
-                                message += 'Student Id existz. ';
-                            }
-                            if (!response.course_exists) {
-                                message += 'course doez not exizt.';
-                            }
-                            message += 'Plez enter new student ID.';
-
-                            if (confirm(message)) {
-                                $('#addStudentForm').off('submit').submit(); 
-                            } else {
-                                window.location.href = "{{ url_for('add_student') }}"; 
-                            }
-                        } else {
-                            if (confirm('r u shur u wanna add dis student?')) {
-                                $('#addStudentForm').off('submit').submit(); 
-                            } else {
-                                window.location.href = "{{ url_for('add_student') }}"; 
-                            }
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        console.error("AJAX request failed: ", textStatus, errorThrown);
-                        showNotification('An error occurred while checking student existence. Please try again.', 'danger');
-                    }
-                });
-            });
-    
-            function showNotification(message, type) {
-                var notification = document.getElementById('notification');
-                notification.style.display = "block";
-                notification.innerHTML = message;
-                notification.className = "notification " + type;
-            }
     
             $('#college_code').change(function() {
                 var college_code = $(this).val();
@@ -159,7 +100,64 @@
                     }
                 });
             });
+    
+            $('#addStudentForm').on('submit', function(event) {
+                event.preventDefault();
+
+                var userConfirmed = confirm('Are you sure you want to add this student?');
+
+                if (userConfirmed) {
+                    var formData = new FormData(this);
+
+                    $.ajax({
+                        url: "{{ url_for('add_student') }}", 
+                        type: 'POST',
+                        data: formData,
+                        processData: false,  
+                        contentType: false,  
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                alert('yipppieee student added successfully!');
+                                window.location.href = "{{ url_for('students') }}"; 
+                            } else if (response.status === 'duplicate') {
+                                alert('Duplicate ID number, please try again with a unique ID.');
+                            } else {
+                                alert(response.message || 'yipppieee student added successfully!');
+                            }
+                        },
+                        error: function(xhr) {
+                            if (xhr.status === 400) {
+                                alert('Duplicate ID number, please try again with a unique ID.');
+                            } else {
+                                alert('An error occurred while adding the student. Please try again.');
+                            }
+                        }
+                    });
+                }
+            });
+    
+            $('#deleteImage').click(function() {
+                $('#image').val('');
+                $('#imagePreview').attr('src', '#').hide();
+                $(this).hide();
+            });
         });
+    
+        function previewImage(event) {
+            var imagePreview = document.getElementById('imagePreview');
+            var deleteBtn = document.getElementById('deleteImage');
+            var file = event.target.files[0];
+    
+            if (file) {
+                imagePreview.src = URL.createObjectURL(file);
+                imagePreview.style.display = 'block';
+                deleteBtn.style.display = 'block';
+            } else {
+                imagePreview.src = '#';
+                imagePreview.style.display = 'none';
+                deleteBtn.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>

@@ -66,7 +66,7 @@
             <tbody>
                 {% for course in courses %}
                 <tr>
-                    <td>{{ course.college_code if course.college_code else 'None' }}</td>
+                    <td>{{ course.college_code if course.college_code else 'UNENROLLED' }}</td>
                     <td>{{ course.course_code }}</td>
                     <td>{{ course.course_name }}</td>
                     <td>
