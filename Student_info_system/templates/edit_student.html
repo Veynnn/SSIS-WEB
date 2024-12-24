@@ -14,13 +14,13 @@
     <div class="container">
         <h1>EDIT STUDENT</h1>
 
-        <form action="{{ url_for('students') }}">
+        <form action="{{ url_for('students.students') }}">
             <button type="submit" class="back-button">
                 <i class="fa-solid fa-arrow-left"></i>
             </button>
         </form>
 
-        <form id="editStudentForm" action="{{ url_for('edit_student', student_id=student.student_id) }}" method="post" enctype="multipart/form-data">
+        <form id="editStudentForm" action="{{ url_for('students.edit_student', student_id=student.student_id) }}" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="student_id">STUDENT ID</label>
                 <input type="text" id="student_id" name="student_id" class="dropdown" value="{{ student.student_id }}" readonly>
@@ -136,7 +136,7 @@ $(document).ready(function() {
 
     function loadCourses(college_code, selected_course) {
         $.ajax({
-            url: "{{ url_for('get_courses', college_code='') }}" + college_code,
+            url: "{{ url_for('students.get_courses', college_code='') }}" + college_code,
             method: 'GET',
             success: function(data) {
                 $('#course_code').empty();
@@ -163,7 +163,7 @@ $(document).ready(function() {
             var formData = new FormData(this); 
 
             $.ajax({
-                url: "{{ url_for('edit_student', student_id=student.student_id) }}", 
+                url: "{{ url_for('students.edit_student', student_id=student.student_id) }}", 
                 type: 'POST',
                 data: formData,
                 processData: false,  
@@ -171,10 +171,10 @@ $(document).ready(function() {
                 success: function(response) {
                     if (response.status === 'success') {
                         alert('Yippiee students data updated succesfully!');
-                        window.location.href = "{{ url_for('students') }}"; 
+                        window.location.href = "{{ url_for('students.students') }}"; 
                     } else {
                         alert(response.message || 'Yippiee students data updated succesfully!');
-                        window.location.href = "{{ url_for('students') }}"; 
+                        window.location.href = "{{ url_for('students.students') }}"; 
 
                     }
                 },

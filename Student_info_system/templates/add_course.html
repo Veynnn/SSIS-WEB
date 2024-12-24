@@ -14,14 +14,14 @@
     <div class="container">
         <h1>ADD COURSE</h1>
 
-        <form action="{{ url_for('courses') }}">
+        <form action="{{ url_for('courses.courses') }}">
             <button type="submit" class="back-button">
                 <i class="fa-solid fa-arrow-left" style="color: #8c0000;"></i>
             </button>
         </form>
 
-        <form action="{{ url_for('add_course') }}" method="POST" id="addCourseForm">
-            <label for="college_code">COLLEGE CODE</label>
+        <form action="{{ url_for('courses.add_course') }}" method="POST" id="addCourseForm">
+            <label for="college_code">COLLEGE NAME</label>
             <select class="dropdown" id="college_code" name="college_code" required>
                 {% for college in colleges %}
                 <option class="dropdown-option" value="{{ college.college_code }}">{{ college.college_name }}</option>
@@ -49,7 +49,7 @@
                 var collegeCode = $('#college_code').val().toUpperCase();
                 
                 $.ajax({
-                    url: "{{ url_for('check_course_existence') }}",  
+                    url: "{{ url_for('courses.check_course_existence') }}",  
                     type: 'POST',
                     dataType: 'json',  
                     data: {
@@ -73,7 +73,7 @@
                     
 
                                 $.ajax({
-                                    url: "{{ url_for('add_course') }}",  
+                                    url: "{{ url_for('courses.add_course') }}",  
                                     type: 'POST',
                                     dataType: 'json',
                                     data: {
@@ -84,7 +84,7 @@
                                     success: function (addResponse) {
                                         alert(addResponse.message); 
                                         if (addResponse.success) {
-                                            window.location.href = "{{ url_for('courses') }}";  
+                                            window.location.href = "{{ url_for('courses.courses') }}";  
                                         }
                                     },
                                     error: function () {

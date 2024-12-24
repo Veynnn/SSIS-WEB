@@ -1,10 +1,11 @@
-from flask import Flask
+from blueprint import create_app
 from config import Config
 
-app = Flask(__name__)
+
+
+app = create_app()
 app.secret_key = Config.SECRET_KEY  
 
-from views import *
 
 if __name__ == '__main__':
     app.run(debug=True)

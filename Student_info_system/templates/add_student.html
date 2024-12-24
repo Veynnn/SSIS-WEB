@@ -14,7 +14,7 @@
     <div class="container">
         <h1>ADD STUDENT</h1>
 
-        <form action="{{ url_for('students') }}">
+        <form action="{{ url_for('students.students') }}">
             <button type="submit" class="back-button">
                 <i class="fa-solid fa-arrow-left" style="color: #8c0000;"></i>
             </button>
@@ -22,7 +22,7 @@
       
         <div id="notification" class="notification" style="display: none;"></div>
 
-        <form action="{{ url_for('add_student') }}" method="POST" enctype="multipart/form-data" id="addStudentForm">
+        <form action="{{ url_for('students.add_student') }}" method="POST" enctype="multipart/form-data" id="addStudentForm">
             <label for="student_id">STUDENT ID</label>
             <input type="text" class="dropdown" id="student_id" name="student_id" placeholder="YYYY-NNNN" required maxlength="9" autocomplete="off">
 
@@ -86,7 +86,7 @@
             $('#college_code').change(function() {
                 var college_code = $(this).val();
                 $.ajax({
-                    url: "{{ url_for('get_courses', college_code='') }}" + college_code,
+                    url: "{{ url_for('students.get_courses', college_code='') }}" + college_code,
                     method: 'GET',
                     success: function(data) {
                         $('#course_code').empty();
@@ -110,7 +110,7 @@
                     var formData = new FormData(this);
 
                     $.ajax({
-                        url: "{{ url_for('add_student') }}", 
+                        url: "{{ url_for('students.add_student') }}", 
                         type: 'POST',
                         data: formData,
                         processData: false,  
@@ -118,11 +118,12 @@
                         success: function(response) {
                             if (response.status === 'success') {
                                 alert('yipppieee student added successfully!');
-                                window.location.href = "{{ url_for('students') }}"; 
+                                window.location.href = "{{ url_for('students.students') }}"; 
                             } else if (response.status === 'duplicate') {
                                 alert('Duplicate ID number, please try again with a unique ID.');
                             } else {
                                 alert(response.message || 'yipppieee student added successfully!');
+                                window.location.href = "{{ url_for('students.students') }}"; 
                             }
                         },
                         error: function(xhr) {

@@ -1,16 +1,17 @@
 import mysql.connector
 from config import Config
 
-db = mysql.connector.connect(
-    host=Config.DB_HOST,
-    user=Config.DB_USER,
-    password=Config.DB_PASSWORD,
-    database=Config.DB_NAME
-)
+def get_db_connection():
+    return mysql.connector.connect(
+        host=Config.DB_HOST,
+        user=Config.DB_USER,
+        password=Config.DB_PASSWORD,
+        database=Config.DB_NAME
+    )
 
-
-#-----------------------note: to execute sql query to modify data
+# Execute query to modify data
 def execute_query(query, data=None):
+    db = get_db_connection()
     cursor = db.cursor()
     if data:
         cursor.execute(query, data)
@@ -18,10 +19,12 @@ def execute_query(query, data=None):
         cursor.execute(query)
     db.commit()
     cursor.close()
+    db.close()
     return True
 
-#------------------------note: dis fetch data 
+# Fetch data from the database
 def fetch_query(query, data=None):
+    db = get_db_connection()
     cursor = db.cursor(dictionary=True)
     if data:
         cursor.execute(query, data)
@@ -29,4 +32,5 @@ def fetch_query(query, data=None):
         cursor.execute(query)
     result = cursor.fetchall()
     cursor.close()
+    db.close()
     return result

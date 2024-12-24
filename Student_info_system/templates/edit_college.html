@@ -13,13 +13,13 @@
     <div class="container">
         <h1>EDIT COLLEGE</h1>
 
-        <form action="{{ url_for('colleges') }}">
+        <form action="{{ url_for('colleges.colleges') }}">
             <button type="submit" class="back-button">
                 <i class="fa-solid fa-arrow-left"></i>
             </button>
         </form>
 
-        <form id="editCollegeForm" action="{{ url_for('edit_college', college_code=college.college_code) }}" method="post">
+        <form id="editCollegeForm" action="{{ url_for('colleges.edit_college', college_code=college.college_code) }}" method="post">
 
             <div class="form-group">
                 <label for="college_name">COLLEGE NAME</label>
@@ -52,13 +52,13 @@
                     };
 
                     $.ajax({
-                        url: "{{ url_for('edit_college', college_code=college.college_code) }}", 
+                        url: "{{ url_for('colleges.edit_college', college_code=college.college_code) }}", 
                         type: 'POST',
                         data: formData,
                         success: function(response) {
                             if (response.status === 'success') {
                                 alert('yippie! college has been updated.');
-                                window.location.href = "{{ url_for('colleges') }}"; 
+                                window.location.href = "{{ url_for('colleges.colleges') }}"; 
                             } else {
                                 alert(response.message);
                             }

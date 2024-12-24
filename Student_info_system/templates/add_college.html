@@ -14,7 +14,7 @@
     <div class="container">
         <h1>ADD COLLEGE</h1>
 
-        <form action="{{ url_for('colleges') }}">
+        <form action="{{ url_for('colleges.colleges') }}">
             <button type="submit" class="back-button">
                 <i class="fa-solid fa-arrow-left" style="color: #8c0000;"></i>
             </button>
@@ -22,7 +22,7 @@
       
         <div id="notification" class="notification" style="display: none;"></div>
 
-        <form action="{{ url_for('add_college') }}" method="POST" id="addCollegeForm">
+        <form action="{{ url_for('colleges.add_college') }}" method="POST" id="addCollegeForm">
 
             <label for="college_code">COLLEGE CODE</label>
             <input type="text" id="college_code" name="college_code" placeholder="COLLEGE CODE" required>
@@ -45,7 +45,7 @@
                 var collegeName = $('#college_name').val();
     
                 $.ajax({
-                    url: "{{ url_for('check_college_existence') }}",  
+                    url: "{{ url_for('colleges.check_college_existence') }}",  
                     type: 'POST',
                     data: {
                         college_code: collegeCode,
@@ -65,14 +65,14 @@
                             if (confirm(message)) {
                                 $('#addCollegeForm').off('submit').submit();
                             } else {
-                                window.location.href = "{{ url_for('add_college') }}"; 
+                                window.location.href = "{{ url_for('colleges.add_college') }}"; 
                             }
 
                         } else {
                             if (confirm('r u shur u wanna add dis college?')) {
                                 $('#addCollegeForm').off('submit').submit();
                             } else {
-                                window.location.href = "{{ url_for('add_college') }}"; 
+                                window.location.href = "{{ url_for('colleges.add_college') }}"; 
                             }
                         }
                     }
