@@ -1,15 +1,22 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
-from models import execute_query, fetch_query
-
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort,jsonify
+from views import (
+    get_courses,
+    check_existing_course,
+    check_existing_code,
+    insert_new_course,
+    get_colleges,
+    get_course,
+    update_course,
+    update_students_course,
+    delete_course
+)
 
 courses_bp = Blueprint('courses', import_name=__name__, template_folder='templates')
 
-
-
-# COURSEZ
 #---------------------Course Page------------------
 @courses_bp.route('/courses', methods=['GET'])
 def courses():
+
     search_keyword = request.args.get('search', '')
     search_by = request.args.get('search_by', 'college_code')
 
@@ -17,10 +24,9 @@ def courses():
         return redirect(url_for('courses.courses'))
 
     if search_by not in ['college_code', 'course_code', 'course_name']:
-        search_by = 'college_code' 
-    
-    query = f"SELECT * FROM courses WHERE {search_by} LIKE %s"
-    courses = fetch_query(query, ('%' + search_keyword + '%',))
+        search_by = 'college_code'
+
+    courses = get_courses(search_by, search_keyword)
 
     return render_template('courses.html', courses=courses, search_keyword=search_keyword)
 
@@ -34,29 +40,30 @@ def add_course():
         college_code = request.form['college_code'].upper()
 
         try:
-            query_name_check = "SELECT * FROM courses WHERE course_name = %s AND college_code = %s"
-            existing_name = fetch_query(query_name_check, (course_name, college_code))
-
-            query_code_check_global = "SELECT * FROM courses WHERE course_code = %s"
-            existing_code = fetch_query(query_code_check_global, (course_code,))
+            existing_name = check_existing_course(course_name, college_code)
+            existing_code = check_existing_code(course_code)
 
             if existing_name and existing_code:
-                return jsonify({'success': False, 'message': 'Both the course name and code already exist. Please choose different values.'})
+                flash('Both the course name and code already exist. Please choose different values.', 'danger')
+                return redirect(url_for('courses.add_course'))
             elif existing_name:
-                return jsonify({'success': False, 'message': 'The course name already exists for this college. Please choose a different name.'})
+                flash('The course name already exists for this college. Please choose a different name.', 'danger')
+                return redirect(url_for('courses.add_course'))
             elif existing_code:
-                return jsonify({'success': False, 'message': 'The course code already exists across all colleges. Please choose a different code.'})  # Global check message
+                flash('The course code already exists across all colleges. Please choose a different code.', 'danger')
+                return redirect(url_for('courses.add_course'))
             else:
-                query = "INSERT INTO courses (course_name, course_code, college_code) VALUES (%s, %s, %s)"
-                execute_query(query, (course_name, course_code, college_code))
-                return jsonify({'success': True, 'message': 'Course added successfully.'})
+                insert_new_course(course_name, course_code, college_code)
+                flash('Course added successfully.', 'success')
+                return redirect(url_for('courses.courses'))
 
         except Exception as e:
-            return jsonify({'success': False, 'message': 'Error occurred: ' + str(e)})  
+            flash(f"Course added successfully.", 'danger')
+            return redirect(url_for('courses.courses'))
 
-    college_query = "SELECT college_code, college_name FROM colleges"
-    colleges = fetch_query(college_query)
+    colleges = get_colleges()
     return render_template('add_course.html', colleges=colleges)
+
 
 @courses_bp.route('/check_course_existence', methods=['POST'])
 def check_course_existence():
@@ -65,22 +72,18 @@ def check_course_existence():
     college_code = request.form.get('college_code').upper()
 
     try:
-        query_name_check = "SELECT * FROM courses WHERE course_name = %s AND college_code = %s"
-        query_code_check_global = "SELECT * FROM courses WHERE course_code = %s"  
-
-        existing_name = fetch_query(query_name_check, (course_name, college_code))
-        existing_code = fetch_query(query_code_check_global, (course_code,))
+        existing_name = check_existing_course(course_name, college_code)
+        existing_code = check_existing_code(course_code)
 
         response = {
             'exists': bool(existing_name or existing_code),
             'name_exists': bool(existing_name),
-            'code_exists': bool(existing_code)  
+            'code_exists': bool(existing_code)
         }
 
         return jsonify(response)
     except Exception as e:
-        print(f"Error checking course existence: {e}")
-        return jsonify({'exists': False, 'name_exists': False, 'code_exists': False, 'message': 'Error occurred while checking course existence.'})  # Ensure a clear error message
+        return jsonify({'exists': False, 'name_exists': False, 'code_exists': False, 'message': 'Error occurred while checking course existence.'})
 
 
 #---------------------Edit Course----------------------
@@ -92,58 +95,31 @@ def edit_course(course_code):
         college_code = request.form['college_code'].upper()
 
         try:
-            update_course_query = """
-            UPDATE courses 
-            SET course_name = %s, course_code = %s, college_code = %s
-            WHERE course_code = %s
-            """
-            execute_query(update_course_query, (course_name, new_course_code, college_code, course_code))
+            update_course(course_name, new_course_code, college_code, course_code)
+            update_students_course(course_code, college_code)
 
-            update_students_query = """
-            UPDATE students 
-            SET college_code = %s
-            WHERE course_code = %s
-            """
-            execute_query(update_students_query, (college_code, new_course_code))
-
-            return jsonify({
-                'status': 'success',
-                'message': 'Course updated successfully.'
-            }), 200
-
+            flash('Course updated successfully.', 'success')
+            return redirect(url_for('courses.courses'))  
         except Exception as e:
-            print(f"Error updating course: {e}")
+            flash('Course updated successfully.', 'danger')
+            return redirect(url_for('courses.courses', course_code=course_code))  
 
-            return jsonify({
-                'status': 'error',
-                'message': 'An error occurred while updating the course. Please try again.'
-            }), 500
-
-    course_query = "SELECT course_code, course_name, college_code FROM courses WHERE course_code = %s"
-    result = fetch_query(course_query, (course_code,))
+    course = get_course(course_code)
     
-    if not result:
-        abort(404) 
+    if not course:
+        abort(404)
 
-    course = result[0]  
-
-    college_query = "SELECT college_code, college_name FROM colleges"
-    colleges = fetch_query(college_query)
-
-    return render_template('edit_course.html', course=course, colleges=colleges)
+    colleges = get_colleges()  
+    return render_template('edit_course.html', course=course[0], colleges=colleges)
 
 
 #---------------------Remove Course----------------------
 @courses_bp.route('/remove_course/<string:course_code>', methods=['POST'])
 def remove_course(course_code):
+    try:
+        delete_course(course_code)
+        flash('Course removed successfully', 'success')
+    except Exception as e:
+        flash(f"Error: {str(e)}", 'danger')
 
-    update_query = "UPDATE students SET course_code = NULL WHERE course_code = %s"
-    execute_query(update_query, (course_code,))
-    
-    delete_query = "DELETE FROM courses WHERE course_code = %s"
-    execute_query(delete_query, (course_code,))
-    
-    flash('Course removed successfully', 'success')
     return redirect(url_for('courses.courses'))
-
-

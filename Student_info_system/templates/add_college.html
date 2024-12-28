@@ -3,6 +3,7 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='add_college.css') }}">
 <title>ADD COLLEGE</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -25,9 +26,14 @@
             <label for="college_name">COLLEGE NAME</label>
             <input type="text" id="college_name" name="college_name" placeholder="COLLEGE NAME" required>
 
+
             <button type="submit" class="add-button">ADD COLLEGE</button>
         </form>
     </div>
+
+
+
+
 
 
     <!--------------------------------JAVASCRIPT THINGZ--------------------------------------->
@@ -35,10 +41,10 @@
         $(document).ready(function() {
             $('#addCollegeForm').on('submit', function(event) {
                 event.preventDefault(); 
-    
-                var collegeCode = $('#college_code').val();
-                var collegeName = $('#college_name').val();
-    
+
+                var collegeCode = $('#college_code').val().toUpperCase();
+                var collegeName = $('#college_name').val().toUpperCase();
+
                 $.ajax({
                     url: "{{ url_for('colleges.check_college_existence') }}",  
                     type: 'POST',
@@ -49,38 +55,30 @@
                     success: function(response) {
                         if (response.exists) {
                             var message = '';
-                            if (response.name_exists) {
-                                message += 'course name existz. ';
+                            if (response.name_exists && response.code_exists) {
+                                message = 'Both college name and code already exist. ';
+                            } else if (response.name_exists) {
+                                message = 'College name already exists. ';
+                            } else if (response.code_exists) {
+                                message = 'College code already exists. ';
                             }
-                            if (response.code_exists) {
-                                message += 'course code existz. ';
-                            }
-                            message += 'write again plez.';
-    
-                            if (confirm(message)) {
-                                $('#addCollegeForm').off('submit').submit();
-                            } else {
-                                window.location.href = "{{ url_for('colleges.add_college') }}"; 
-                            }
-
+                            message += 'Please try again with different values.';
+                            
+                            alert(message);  
+                            return false;    
                         } else {
-                            if (confirm('r u shur u wanna add dis college?')) {
-                                $('#addCollegeForm').off('submit').submit();
-                            } else {
-                                window.location.href = "{{ url_for('colleges.add_college') }}"; 
+                            if (confirm('Are you sure you want to add this college?')) {
+                                var form = $('#addCollegeForm')[0];
+                                form.submit();
                             }
                         }
+                    },
+                    error: function() {
+                        alert('An error occurred while checking college existence. Please try again.');
                     }
                 });
             });
         });
-    
-        function showNotification(message, type) {
-            var notification = document.getElementById("notification");
-            notification.style.display = "block";
-            notification.innerHTML = message;
-            notification.className = "notification " + type;
-        }
     </script>
 
 </body>

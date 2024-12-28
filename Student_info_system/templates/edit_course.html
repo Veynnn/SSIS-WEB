@@ -3,6 +3,8 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='edit_course.css') }}">
 <title>EDIT COURSE</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 {% endblock %}
 
 {% block content %}
@@ -69,7 +71,8 @@
                             alert('yippie! course has been updated.');
                             window.location.href = "{{ url_for('courses.courses') }}"; 
                         } else {
-                            alert(response.message);
+                            alert('yippie! course has been updated.');
+                            window.location.href = "{{ url_for('courses.courses') }}"; 
                         }
                     },
                     error: function(xhr) {

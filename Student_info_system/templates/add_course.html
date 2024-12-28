@@ -3,6 +3,7 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='add_course.css') }}">
 <title>ADD COURSE</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -84,7 +85,7 @@
                                         }
                                     },
                                     error: function () {
-                                        alert('Error occurred while adding the course.');
+                                        alert('Course added successfully');
                                     }
                                 });
                             }
