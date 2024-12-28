@@ -7,7 +7,6 @@ from views import (get_colleges_search,
                    remove_colleges
             )
 from models import fetch_query,execute_query
-import MySQLdb 
 
 
 colleges_bp = Blueprint('colleges', import_name=__name__, template_folder='templates')

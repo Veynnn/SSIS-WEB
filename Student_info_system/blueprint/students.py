@@ -25,7 +25,6 @@ students_bp = Blueprint(
 
 DEFAULT_PROFILE_IMAGE = 'static/default_pic.jpg'
 
-
 #--------------------- Student Page ----------------------
 
 @students_bp.route('/students', methods=['GET'])
