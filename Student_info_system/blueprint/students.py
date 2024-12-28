@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort,jsonify
 from models import execute_query, fetch_query
+import math
+
 
 
 from models import execute_query, fetch_query
@@ -23,17 +25,29 @@ static_path = os.path.join(project_root, 'static')
 DEFAULT_PROFILE_IMAGE = 'static/default_pic.jpg'
 
 #--------------------- Student Page ----------------------
+
 @students_bp.route('/students', methods=['GET'])
 def students():
     search_keyword = request.args.get('search', '')
     search_by = request.args.get('search_by', 'student_id')
-
+    page = int(request.args.get('page', 1))  
+    per_page = 50  
     if 'student_button' in request.args:
-        return redirect(url_for('students'))
+        return redirect(url_for('students.students'))
 
     valid_search_fields = ['student_id', 'student_name', 'gender', 'year_lvl', 'course_code', 'college_code']
     if search_by not in valid_search_fields:
         search_by = 'student_id'
+
+    count_query = f"""
+    SELECT COUNT(*) 
+    FROM students 
+    WHERE {search_by} LIKE %s
+    """
+    total_students = fetch_query(count_query, ('%' + search_keyword + '%',))[0]['COUNT(*)']
+
+    total_pages = math.ceil(total_students / per_page)
+    offset = (page - 1) * per_page
 
     query = f"""
     SELECT 
@@ -41,7 +55,7 @@ def students():
         students.student_name, 
         students.gender, 
         students.year_lvl, 
-        COALESCE(students.image_url, %s) AS image_url,  -- Default if image URL is NULL
+        COALESCE(students.image_url, %s) AS image_url, 
         courses.course_code, 
         colleges.college_code, 
         courses.course_name, 
@@ -50,15 +64,19 @@ def students():
     LEFT JOIN courses ON students.course_code = courses.course_code
     LEFT JOIN colleges ON students.college_code = colleges.college_code
     WHERE students.{search_by} LIKE %s
+    LIMIT %s OFFSET %s
     """
-    students = fetch_query(query, (DEFAULT_PROFILE_IMAGE, '%' + search_keyword + '%'))
+    students = fetch_query(query, (DEFAULT_PROFILE_IMAGE, '%' + search_keyword + '%', per_page, offset))
+
     default_profile_image = url_for('static', filename='default_profile.png')
     
     return render_template('students.html', 
                            students=students, 
                            default_profile_image=default_profile_image,
                            search_keyword=search_keyword,
-                           )
+                           search_by=search_by,
+                           page=page,
+                           total_pages=total_pages)
 
 
 #--------------------- Add Student ----------------------

@@ -64,20 +64,17 @@
             <tbody>
                 {% for student in students %}
                 <tr>
-            
                     <td>
-                            <img src="{{ student.image_url if student.image_url else default_profile_image }}" 
-                                 class="profile-image" 
-                                 alt="Profile Image" 
-                                 onerror="this.onerror=null; this.src='/static/default_pic.jpg';">
+                        <img src="{{ student.image_url if student.image_url else default_profile_image }}" 
+                             class="profile-image" 
+                             alt="Profile Image" 
+                             onerror="this.onerror=null; this.src='/static/default_pic.jpg';">
                     </td>                                        
-                                
                     <td>{{ student.student_id }}</td>
                     <td>{{ student.student_name }}</td>
                     <td>{{ student.gender }}</td>
                     <td>{{ student.year_lvl }}</td>
                     <td>{{ student.course_code if student.course_code else 'UNENROLLED' }}</td>
-
                     <td>
                         <div class="action-buttons">
                             <a href="{{ url_for('students.edit_student', student_id=student.student_id) }}" class="button"><i class="fa-solid fa-pen-to-square"></i></a>
@@ -92,10 +89,27 @@
         </table>
     </div>
 
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('students.students', search=search_keyword, search_by=search_by, page=page-1) }}" class="pagination-button">Previous</a>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+        <a href="{{ url_for('students.students', search=search_keyword, search_by=search_by, page=p) }}" 
+           class="pagination-button {% if p == page %}active{% endif %}">
+           {{ p }}
+        </a>
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a href="{{ url_for('students.students', search=search_keyword, search_by=search_by, page=page+1) }}" class="pagination-button">Next</a>
+        {% endif %}
+    </div>
+
+
+
     <a href="{{ url_for('students.add_student') }}" class="add-student">ADD STUDENT</a>
     <a href="/" class="button"></a>
-
-    <!---------------------JAVASCRIPT THINGZ----------------------------->
 
     <script>
         function updatePlaceholder() {

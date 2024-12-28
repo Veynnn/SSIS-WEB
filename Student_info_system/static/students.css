@@ -226,3 +226,31 @@ table tbody tr:hover td {
 .action-buttons form {
     margin: 0;
 }
+
+
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination-button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    text-decoration: none;
+    color: #333;
+    border-radius: 5px;
+}
+
+.pagination-button.active {
+    background-color: #8C0000;
+    color: white;
+    font-weight: bold;
+}
+
+.pagination-button:hover {
+    background-color: #fce685;
+    color: white;
+}
