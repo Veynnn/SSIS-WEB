@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 cloudinary = "*"
+flask = "*"
+mysql-connector-python = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
