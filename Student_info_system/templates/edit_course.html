@@ -1,17 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='edit_course.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <title>Edit Course</title>
-</head>
+{% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='edit_course.css') }}">
+<title>EDIT COURSE</title>
+{% endblock %}
 
-<body>
+{% block content %}
     <div class="container">
         <h1>EDIT COURSE</h1>
 
@@ -88,5 +82,5 @@
 </script>
 
  
-</body>
-</html>
+
+{% endblock %}

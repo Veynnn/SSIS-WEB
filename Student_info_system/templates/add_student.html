@@ -1,16 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='add_student.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <title>Add Student</title>
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='add_student.css') }}">
+<title>ADD STUDENT</title>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <h1>ADD STUDENT</h1>
 
@@ -160,5 +155,4 @@
             }
         }
     </script>
-</body>
-</html>
+{% endblock %}

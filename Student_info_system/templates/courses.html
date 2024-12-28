@@ -1,16 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Courses</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='courses.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='courses.css') }}">
+<title>COURSE</title>
+{% endblock %}
+
+{% block content %}
     <div class="header">
         <div class="student-info">STUDENT INFORMATION SYSTEM</div>
         
@@ -66,7 +61,7 @@
             <tbody>
                 {% for course in courses %}
                 <tr>
-                    <td>{{ course.college_code if course.college_code else 'UNENROLLED' }}</td>
+                    <td>{{ course.college_code if course.college_code else 'NONE' }}</td>
                     <td>{{ course.course_code }}</td>
                     <td>{{ course.course_name }}</td>
                     <td>
@@ -108,3 +103,4 @@
 </script>
 </body>
 </html>
+{% endblock %}
