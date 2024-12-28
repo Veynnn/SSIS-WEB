@@ -1,18 +1,19 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
 from views import (
-                    get_total_students,
-                    get_students,
-                    check_student_existence,
-                    add_student_to_db,
-                    update_student_in_db,
-                    remove_student_from_db,
-                    get_colleges,
-                    get_courses_by_college
-                )
+    get_total_students,
+    get_students,
+    check_student_existence,
+    add_student_to_db,
+    update_student_in_db,
+    remove_student_from_db,
+    get_colleges,
+    get_courses_by_college
+)
 from cloudinary import uploader
 import os
 import math
 from models import fetch_query
+from werkzeug.utils import secure_filename
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 students_bp = Blueprint(
@@ -24,6 +25,8 @@ students_bp = Blueprint(
 )
 
 DEFAULT_PROFILE_IMAGE = 'static/default_pic.jpg'
+MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB file size limit
+
 
 #--------------------- Student Page ----------------------
 
@@ -31,8 +34,8 @@ DEFAULT_PROFILE_IMAGE = 'static/default_pic.jpg'
 def students():
     search_keyword = request.args.get('search', '')
     search_by = request.args.get('search_by', 'student_id')
-    page = int(request.args.get('page', 1))  
-    per_page = 50  
+    page = int(request.args.get('page', 1))
+    per_page = 50
 
     valid_search_fields = ['student_id', 'student_name', 'gender', 'year_lvl', 'course_code', 'college_code']
     if search_by not in valid_search_fields:
@@ -44,7 +47,7 @@ def students():
     students = get_students(search_keyword, search_by, page, per_page)
 
     default_profile_image = url_for('static', filename='default_profile.png')
-    
+
     return render_template('students.html', 
                            students=students, 
                            default_profile_image=default_profile_image,
@@ -52,7 +55,6 @@ def students():
                            search_by=search_by,
                            page=page,
                            total_pages=total_pages)
-
 
 
 #--------------------- Add Student ----------------------
@@ -69,7 +71,26 @@ def add_student():
 
         image_file = request.files.get('image')
         image_url = DEFAULT_PROFILE_IMAGE
+
         if image_file:
+            # Validate file format
+            allowed_extensions = {'jpg', 'jpeg', 'png'}
+            file_extension = os.path.splitext(image_file.filename)[1].lower().strip('.')
+
+            if file_extension not in allowed_extensions:
+                flash('Invalid file type. Only JPG and PNG files are allowed.', 'danger')
+                return redirect(url_for('students.add_student'))
+
+            # Validate file size
+            image_file.seek(0, os.SEEK_END)  
+            file_size = image_file.tell() 
+            image_file.seek(0)  
+
+            if file_size > MAX_FILE_SIZE:
+                flash('File size exceeds the 2 MB limit.', 'danger')
+                return redirect(url_for('students.add_student'))
+
+            # Upload image to Cloudinary
             upload_result = uploader.upload(image_file, public_id=student_id)
             image_url = upload_result['secure_url']
 
@@ -85,10 +106,9 @@ def add_student():
             return redirect(url_for('students.students'))
 
         return redirect(url_for('students.students'))
-    
+
     colleges = get_colleges()
     return render_template('add_student.html', colleges=colleges)
-
 
 
 #--------------------- Edit Student ----------------------
@@ -108,10 +128,28 @@ def edit_student(student_id):
         if request.form.get('delete_image') == "true": 
             image_url = DEFAULT_PROFILE_IMAGE  
         elif image_file:
-            upload_result = uploader.upload(image_file , overwrite=True, public_id=student_id)
+            # Validate file format
+            allowed_extensions = {'jpg', 'jpeg', 'png'}
+            file_extension = os.path.splitext(image_file.filename)[1].lower().strip('.')
+
+            if file_extension not in allowed_extensions:
+                flash('Invalid file type. Only JPG and PNG files are allowed.', 'danger')
+                return redirect(url_for('students.edit_student', student_id=student_id))
+
+            # Validate file size
+            image_file.seek(0, os.SEEK_END)
+            file_size = image_file.tell()
+            image_file.seek(0)
+
+            if file_size > MAX_FILE_SIZE:
+                flash('File size exceeds the 2 MB limit.', 'danger')
+                return redirect(url_for('students.edit_student', student_id=student_id))
+
+            # Process file upload
+            upload_result = uploader.upload(image_file, overwrite=True, public_id=student_id)
             image_url = upload_result['secure_url']
         else:
-            image_url = current_image_url  
+            image_url = current_image_url
 
         try:
             update_student_in_db(student_id, student_name, gender, year_lvl, course_code, college_code, image_url)
@@ -147,7 +185,6 @@ def get_courses(college_code):
     return jsonify(courses)
 
 
-
 #--------------------- Remove Student ----------------------
 
 @students_bp.route('/remove_student/<string:student_id>', methods=['POST'])
@@ -155,3 +192,10 @@ def remove_student(student_id):
     remove_student_from_db(student_id)
     flash('Student removed successfully', 'success')
     return redirect(url_for('students.students'))
+
+
+#--------------------- Error Handler ----------------------
+
+@students_bp.errorhandler(413)
+def request_entity_too_large(error):
+    return "File size exceeds the allowed limit (2 MB).", 413

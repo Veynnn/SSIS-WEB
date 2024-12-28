@@ -75,10 +75,42 @@
                 if (input.length > 4) {
                     input = input.slice(0, 4) + '-' + input.slice(4);
                 }
-    
+
                 this.value = input;
             });
-    
+
+            $('#image').change(function (event) {
+                const file = event.target.files[0];
+                const imagePreview = $('#imagePreview');
+                const deleteBtn = $('#deleteImage');
+
+                if (file) {
+                    const allowedExtensions = ['image/jpeg', 'image/jpg', 'image/png'];
+                    const isValidFileType = allowedExtensions.includes(file.type);
+
+                    if (!isValidFileType) {
+                        alert('Invalid file type. Only JPG, JPEG, and PNG files are allowed.');
+                        $(this).val('');
+                        imagePreview.hide();
+                        deleteBtn.hide();
+                        return;
+                    }
+
+                    if (file.size > 2 * 1024 * 1024) { // 2 MB limit
+                        alert('File size exceeds the 2MB limit. Please upload a smaller file.');
+                        $(this).val('');
+                        imagePreview.hide();
+                        deleteBtn.hide();
+                    } else {
+                        imagePreview.attr('src', URL.createObjectURL(file)).show();
+                        deleteBtn.show();
+                    }
+                } else {
+                    imagePreview.hide();
+                    deleteBtn.hide();
+                }
+            });
+
             $('#college_code').change(function() {
                 var college_code = $(this).val();
                 $.ajax({
@@ -96,7 +128,7 @@
                     }
                 });
             });
-    
+
             $('#addStudentForm').on('submit', function(event) {
                 event.preventDefault();
 
@@ -113,18 +145,17 @@
                         contentType: false,  
                         success: function(response) {
                             if (response.status === 'success') {
-                                alert('yipppieee student added successfully!');
+                                alert('Yippieee!!! Student added successfully!');
                                 window.location.href = "{{ url_for('students.students') }}"; 
                             } else if (response.status === 'duplicate') {
-                                alert('Duplicate ID number, please try again with a unique ID.');
+                                alert('Oh no!! Duplicate ID number, please try again with a unique ID.');
                             } else {
-                                alert(response.message || 'yipppieee student added successfully!');
-                                window.location.href = "{{ url_for('students.students') }}"; 
+                                alert(response.message || 'An error occurred while adding the student.');
                             }
                         },
                         error: function(xhr) {
                             if (xhr.status === 400) {
-                                alert('Duplicate ID number, please try again with a unique ID.');
+                                alert('Oh no!!! Duplicate ID number, please try again with a unique ID.');
                             } else {
                                 alert('An error occurred while adding the student. Please try again.');
                             }
@@ -132,28 +163,12 @@
                     });
                 }
             });
-    
+
             $('#deleteImage').click(function() {
                 $('#image').val('');
                 $('#imagePreview').attr('src', '#').hide();
                 $(this).hide();
             });
         });
-    
-        function previewImage(event) {
-            var imagePreview = document.getElementById('imagePreview');
-            var deleteBtn = document.getElementById('deleteImage');
-            var file = event.target.files[0];
-    
-            if (file) {
-                imagePreview.src = URL.createObjectURL(file);
-                imagePreview.style.display = 'block';
-                deleteBtn.style.display = 'block';
-            } else {
-                imagePreview.src = '#';
-                imagePreview.style.display = 'none';
-                deleteBtn.style.display = 'none';
-            }
-        }
     </script>
 {% endblock %}

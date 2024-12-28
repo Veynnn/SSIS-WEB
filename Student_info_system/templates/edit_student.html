@@ -86,101 +86,118 @@
     <!--------------------------------JavaScript Thingzz--------------------------------------->
 
     <script>
-$(document).ready(function() {
-    if ($("#imagePreview").attr("src")) {
-        $('#deleteImageButton').show();
-    }
-
-    $('#image').change(function(event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            $('#imagePreview').attr('src', e.target.result).show();
-            $('#deleteImageButton').show();
-            $('#delete_image').val("false"); 
-        };
-
-        if (file) {
-            reader.readAsDataURL(file);
-        } else {
-            $('#imagePreview').hide();
-            $('#deleteImageButton').hide();
-        }
-    });
-
-    $('#deleteImageButton').click(function() {
-        if (confirm("Are you sure you want to delete the image?")) {
-            $('#imagePreview').hide().attr("src", "");
-            $('#deleteImageButton').hide();
-            $('#image').val('');
-            $('#delete_image').val("true"); 
-            $('input[name="current_image_url"]').val(''); 
-        }
-    });
-
-    var selectedCollegeCode = $('#college_code').val();
-    var selectedCourseCode = "{{ student.course_code }}"; 
-    if (selectedCollegeCode) {
-        loadCourses(selectedCollegeCode, selectedCourseCode);
-    }
-
-    $('#college_code').change(function() {
-        var college_code = $(this).val();
-        loadCourses(college_code, null);
-    });
-
-    function loadCourses(college_code, selected_course) {
-        $.ajax({
-            url: "{{ url_for('students.get_courses', college_code='') }}" + college_code,
-            method: 'GET',
-            success: function(data) {
-                $('#course_code').empty();
-                $('#course_code').append('<option value="" disabled>Select a course</option>');
-                $.each(data, function(index, course) {
-                    var selected = (course.course_code === selected_course) ? 'selected' : '';
-                    $('#course_code').append('<option value="' + course.course_code + '" ' + selected + '>' + course.course_name + '</option>');
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error("AJAX request failed: ", textStatus, errorThrown);
+        $(document).ready(function () {
+            if ($("#imagePreview").attr("src")) {
+                $('#deleteImageButton').show();
             }
-        });
-    }
 
+            $("#image").change(function (event) {
+                const file = event.target.files[0];
+                const allowedExtensions = ['image/jpeg', 'image/jpg', 'image/png'];
 
-
-    $('#editStudentForm').on('submit', function(event) {
-        event.preventDefault();
-
-        var userConfirmed = confirm('r u sure you wanna save changes for dis student?');
-
-        if (userConfirmed) {
-            var formData = new FormData(this); 
-
-            $.ajax({
-                url: "{{ url_for('students.edit_student', student_id=student.student_id) }}", 
-                type: 'POST',
-                data: formData,
-                processData: false,  
-                contentType: false,  
-                success: function(response) {
-                    if (response.status === 'success') {
-                        alert('Yippiee students data updated succesfully!');
-                        window.location.href = "{{ url_for('students.students') }}"; 
-                    } else {
-                        alert(response.message || 'Yippiee students data updated succesfully!');
-                        window.location.href = "{{ url_for('students.students') }}"; 
-
+                if (file) {
+                    if (!allowedExtensions.includes(file.type)) {
+                        alert("Invalid file type. Only JPG, JPEG, and PNG files are allowed.");
+                        event.target.value = ""; // Reset the file input
+                        $("#imagePreview").hide();
+                        $("#deleteImageButton").hide();
+                        return;
                     }
-                },
-                error: function(xhr) {
-                    alert('Oh no! Please try again!');
+
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert("The selected file exceeds the 2 MB size limit. Please choose a smaller file.");
+                        event.target.value = ""; // Reset the file input
+                        $("#imagePreview").hide();
+                        $("#deleteImageButton").hide();
+                        return;
+                    }
+
+                    const reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        $("#imagePreview")
+                            .attr("src", e.target.result)
+                            .show();
+                        $("#deleteImageButton").show();
+                        $("#delete_image").val("false");
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    $("#imagePreview").hide();
+                    $("#deleteImageButton").hide();
                 }
             });
-        }
-    });
-});
+
+            $('#deleteImageButton').click(function () {
+                if (confirm("Are you sure you want to delete the image?")) {
+                    $('#imagePreview').hide().attr("src", "");
+                    $('#deleteImageButton').hide();
+                    $('#image').val('');
+                    $('#delete_image').val("true");
+                    $('input[name="current_image_url"]').val('');
+                }
+            });
+
+            var selectedCollegeCode = $('#college_code').val();
+            var selectedCourseCode = "{{ student.course_code }}";
+            if (selectedCollegeCode) {
+                loadCourses(selectedCollegeCode, selectedCourseCode);
+            }
+
+            $('#college_code').change(function () {
+                var college_code = $(this).val();
+                loadCourses(college_code, null);
+            });
+
+            function loadCourses(college_code, selected_course) {
+                $.ajax({
+                    url: "{{ url_for('students.get_courses', college_code='') }}" + college_code,
+                    method: 'GET',
+                    success: function (data) {
+                        $('#course_code').empty();
+                        $('#course_code').append('<option value="" disabled>Select a course</option>');
+                        $.each(data, function (index, course) {
+                            var selected = (course.course_code === selected_course) ? 'selected' : '';
+                            $('#course_code').append('<option value="' + course.course_code + '" ' + selected + '>' + course.course_name + '</option>');
+                        });
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX request failed: ", textStatus, errorThrown);
+                    }
+                });
+            }
+
+            $('#editStudentForm').on('submit', function (event) {
+                event.preventDefault();
+
+                var userConfirmed = confirm('Are you sure you want to save changes for this student?');
+
+                if (userConfirmed) {
+                    var formData = new FormData(this);
+
+                    $.ajax({
+                        url: "{{ url_for('students.edit_student', student_id=student.student_id) }}",
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.status === 'success') {
+                                alert('Yippiee! Student data updated successfully!');
+                                window.location.href = "{{ url_for('students.students') }}";
+                            } else {
+                                alert(response.message || 'Yippiee! Student data updated successfully!');
+                                window.location.href = "{{ url_for('students.students') }}";
+                            }
+                        },
+                        error: function (xhr) {
+                            alert('Oh no! An error occurred. Please try again!');
+                        }
+                    });
+                }
+            });
+        });
 
     </script>
 {% endblock %}
