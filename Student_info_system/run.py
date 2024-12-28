@@ -1,8 +1,10 @@
 from blueprint import create_app
 from flask import Flask
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-app.secret_key = '123456'
+
+load_dotenv(".env")
 
 app = create_app()
 if __name__ == '__main__':

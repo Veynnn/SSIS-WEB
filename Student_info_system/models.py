@@ -1,12 +1,17 @@
 import mysql.connector
-from config import Config
+from config import DB_HOST,DB_NAME,DB_PASSWORD,DB_USER
 
+
+print(f"{DB_HOST=}")
+print(f"{DB_USER=}")
+print(f"{DB_PASSWORD=}")
+print(f"{DB_NAME=}")
 def get_db_connection():
     return mysql.connector.connect(
-        host=Config.DB_HOST,
-        user=Config.DB_USER,
-        password=Config.DB_PASSWORD,
-        database=Config.DB_NAME
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME
     )
 
 # Execute query to modify data

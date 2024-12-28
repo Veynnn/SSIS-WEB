@@ -4,7 +4,7 @@ from .colleges import colleges_bp
 from .courses import courses_bp
 from .students import students_bp
 from .index import index_bp
-from config import Config
+from config import SECRET_KEY
 
 def create_app():
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -16,7 +16,7 @@ def create_app():
                 template_folder=template_path,
                 static_folder=static_path)
     
-    app.secret_key = Config.SECRET_KEY  
+    app.secret_key = SECRET_KEY  
 
 
     

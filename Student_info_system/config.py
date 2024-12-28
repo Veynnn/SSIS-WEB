@@ -1,6 +1,13 @@
-class Config:
-    DB_HOST = "localhost"
-    DB_USER = "root"
-    DB_PASSWORD = "123456"
-    DB_NAME = "ssis"
-    SECRET_KEY = "labinkyottie" 
+
+from dotenv import load_dotenv
+from os import getenv
+
+load_dotenv() 
+
+DB_HOST = getenv("DB_HOST")
+DB_USER = getenv("DB_USER")
+DB_PASSWORD = getenv("DB_PASSWORD")
+DB_NAME = getenv("DB_NAME")
+SECRET_KEY = getenv("SECRET_KEY")
+
+
