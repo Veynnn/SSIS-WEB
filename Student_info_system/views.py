@@ -11,45 +11,52 @@ def get_colleges_search(search_keyword, search_by):
     query = f"SELECT * FROM colleges WHERE {search_by} LIKE %s"
     return fetch_query(query, ('%' + search_keyword + '%',))
 
+# Function to check if a college name exists
 def check_college_name_existence(college_name):
     query = "SELECT * FROM colleges WHERE college_name = %s"
-    return fetch_query(query, (college_name,))
+    result = fetch_query(query, (college_name,))
+    return result
 
+# Function to check if a college code exists
 def check_college_code_existence(college_code):
     query = "SELECT * FROM colleges WHERE college_code = %s"
-    return fetch_query(query, (college_code,))
+    result = fetch_query(query, (college_code,))
+    return result
 
+# Function to add a new college
 def add_colleges(college_name, college_code):
-    query = "INSERT INTO colleges (college_name, college_code) VALUES (%s, %s)"
+    query = """
+    INSERT INTO colleges (college_name, college_code)
+    VALUES (%s, %s)
+    """
     execute_query(query, (college_name, college_code))
 
-def get_college_by_code(college_code):
-    query = "SELECT college_code, college_name FROM colleges WHERE college_code = %s"
-    return fetch_query(query, (college_code,))
-
-def update_college(college_name, new_college_code, college_code):
-    # First, update all related records in courses and students
-    update_courses_query = """
-    UPDATE courses 
-    SET college_code = %s
-    WHERE college_code = %s
-    """
-    execute_query(update_courses_query, (new_college_code, college_code))
-
-    update_students_query = """
-    UPDATE students 
-    SET college_code = %s
-    WHERE college_code = %s
-    """
-    execute_query(update_students_query, (new_college_code, college_code))
-
-    # Then update the college record
-    update_college_query = """
+# Function to update college information
+def update_college_query(college_name, new_college_code, old_college_code):
+    query = """
     UPDATE colleges 
     SET college_name = %s, college_code = %s
     WHERE college_code = %s
     """
-    execute_query(update_college_query, (college_name, new_college_code, college_code))
+    execute_query(query, (college_name, new_college_code, old_college_code))
+
+# Function to update courses with the new college code
+def update_courses_query(new_college_code, old_college_code):
+    query = """
+    UPDATE courses 
+    SET college_code = %s
+    WHERE college_code = %s
+    """
+    execute_query(query, (new_college_code, old_college_code))
+
+# Function to update students with the new college code
+def update_students_query(new_college_code, old_college_code):
+    query = """
+    UPDATE students 
+    SET college_code = %s
+    WHERE college_code = %s
+    """
+    execute_query(query, (new_college_code, old_college_code))
 
 def remove_colleges(college_code):
     update_students_query = """

@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from views import (get_colleges_search, 
                    check_college_name_existence, 
                    check_college_code_existence, 
-                   add_colleges, get_college_by_code, 
-                   update_college, 
+                   add_colleges, update_courses_query,
+                   update_college_query, update_students_query,
                    remove_colleges
             )
 from models import fetch_query,execute_query
@@ -28,6 +28,7 @@ def colleges():
     colleges = get_colleges_search (search_keyword, search_by)
 
     return render_template('colleges.html', colleges=colleges, search_keyword=search_keyword)
+
 
 #---------------------Add College------------------
 @colleges_bp.route('/add_college', methods=['GET', 'POST'])
@@ -57,20 +58,14 @@ def add_college():
     
     return render_template('add_college.html')
 
-
-
 #-------------AJAX College Existence Check-------------
 @colleges_bp.route('/check_college_existence', methods=['POST'])
 def check_college_existence():
-    
     college_name = request.form.get('college_name').upper()
     college_code = request.form.get('college_code').upper()
-    
-    query_name_check = "SELECT * FROM colleges WHERE college_name = %s"
-    query_code_check = "SELECT * FROM colleges WHERE college_code = %s"
 
-    existing_name = fetch_query(query_name_check, (college_name,))
-    existing_code = fetch_query(query_code_check, (college_code,))
+    existing_name = check_college_name_existence(college_name)
+    existing_code = check_college_code_existence(college_code)
 
     response = {
         'exists': False,
@@ -89,27 +84,10 @@ def edit_college(college_code):
     if request.method == 'POST':
         college_name = request.form['college_name'].upper()
         new_college_code = request.form['college_code'].upper()
-        #-------------update queriez-------------
         try:
-            update_college_query = """
-            UPDATE colleges 
-            SET college_name = %s, college_code = %s
-            WHERE college_code = %s
-            """
-            execute_query(update_college_query, (college_name, new_college_code, college_code))
-            update_courses_query = """
-            UPDATE courses 
-            SET college_code = %s
-            WHERE college_code = %s
-            """
-            execute_query(update_courses_query, (new_college_code, college_code))
-            update_students_query = """
-            UPDATE students 
-            SET college_code = %s
-            WHERE college_code = %s
-            """
-            execute_query(update_students_query, (new_college_code, college_code))
-            #-------------for response and handlingz-------------
+            update_college_query(college_name, new_college_code, college_code)
+            update_courses_query(new_college_code, college_code)
+            update_students_query(new_college_code, college_code)
             return jsonify({
                 'status': 'success',
                 'message': 'College updated successfully.'
@@ -120,11 +98,12 @@ def edit_college(college_code):
                 'status': 'error',
                 'message': 'An error occurred while updating the college. Please try again.'
             }), 500
-    college_query = "SELECT college_code, college_name FROM colleges WHERE college_code = %s"                #----note: dis fetch college-----
-    college = fetch_query(college_query, (college_code,))
+
+    college = fetch_query("SELECT college_code, college_name FROM colleges WHERE college_code = %s", (college_code,))
     if not college:
         abort(404)  
     return render_template('edit_college.html', college=college[0])
+
 
 #---------------------Remove College------------------
 @colleges_bp.route('/remove_college/<string:college_code>', methods=['POST'])

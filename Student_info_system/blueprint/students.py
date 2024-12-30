@@ -161,15 +161,7 @@ def edit_student(student_id):
             flash('An error occurred while updating the student. Please try again.', 'danger')
             return redirect(url_for('students.edit_student', student_id=student_id))
 
-    student_query = """
-    SELECT students.*, COALESCE(students.image_url, %s) AS image_url
-    FROM students
-    WHERE students.student_id = %s
-    """
-    student = fetch_query(student_query, (DEFAULT_PROFILE_IMAGE, student_id))
-    
-    if not student:
-        abort(404)
+
 
     colleges = get_colleges()
 
